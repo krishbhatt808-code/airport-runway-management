@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Airport Runway Management System</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to content</a>
+  <div class="progress" id="progress" aria-hidden="true"></div>
+  <button class="btn menu-btn" id="menu-btn" aria-controls="sidebar" aria-expanded="false">Menu</button>
+
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <div><strong>Runway Control</strong><small>Operating Systems lab</small></div>
+    </div>
+    <nav id="nav" aria-label="Main navigation">
+      <a href="#dashboard">Dashboard</a>
+      <a href="#runway">Runway Allocation</a>
+      <a href="#baggage">Baggage Sorting</a>
+      <a href="#maintenance">Aircraft Maintenance</a>
+      <a href="#deadlock">Deadlock Management</a>
+      <a href="#inventory">Resource Inventory</a>
+      <a href="#records">Aircraft and Flight Records</a>
+      <a href="#history">Scheduling History</a>
+      <a href="#reports">Reports</a>
+      <a href="#settings">Settings</a>
+    </nav>
+    <p class="sidebar-note">Academic simulation. Not for real flight or maintenance operations.</p>
+  </aside>
+
+  <main id="main" tabindex="-1">
+    <!-- Dashboard: filled from /api/dashboard -->
+    <section class="view" id="view-dashboard" hidden>
+      <h1>Dashboard</h1>
+      <p class="intro">Live figures from the MySQL database.</p>
+      <div class="stats" id="stats"></div>
+      <div class="grid-2">
+        <div class="card" id="chart-algos"></div>
+        <div class="card" id="chart-res"></div>
+      </div>
+      <div class="card" id="recent"></div>
+    </section>
+
+    <!-- Scheduling modules share one layout, built from the template below -->
+    <section class="view" id="view-runway" hidden></section>
+    <section class="view" id="view-baggage" hidden></section>
+    <section class="view" id="view-maintenance" hidden></section>
+    <template id="tpl-sched">
+      <h1></h1>
+      <p class="intro"></p>
+      <div class="card">
+        <h2>Run a schedule on the stored records</h2>
+        <form class="row" data-role="run">
+          <label>Algorithm <select name="algorithm"></select></label>
+          <label data-role="q" hidden>Time quantum <input name="quantum" type="number" min="1" max="1000" value="2"></label>
+          <button class="btn primary" type="submit">Run scheduler</button>
+        </form>
+      </div>
+      <div class="card" data-role="result" hidden aria-live="polite"></div>
+      <div class="card" data-role="records"></div>
+    </template>
+
+    <section class="view" id="view-deadlock" hidden>
+      <h1>Deadlock Management</h1>
+      <p class="intro">Banker's algorithm (avoidance) and multiple-instance detection. MySQL holds the authoritative state; the server decides every request.</p>
+      <div class="card">
+        <div class="row">
+          <label for="scenario">Demo scenario <select id="scenario"></select></label>
+          <button class="btn primary" id="load-scn">Load scenario</button>
+          <button class="btn" id="reset-scn">Reset demo</button>
+        </div>
+        <p class="note" id="scn-note"></p>
+      </div>
+      <div class="card" id="dl-state"></div>
+      <div class="grid-2">
+        <form class="card" id="req-form">
+          <h2>Resource request</h2>
+          <label>Process <select name="process"></select></label>
+          <div class="vec" data-vec></div>
+          <label class="check"><input type="checkbox" name="queue"> Keep as a waiting request if denied</label>
+          <div class="row">
+            <button class="btn primary" type="submit">Submit request</button>
+            <button class="btn" type="button" id="btn-safety">Check safety</button>
+          </div>
+        </form>
+        <form class="card" id="rel-form">
+          <h2>Release and recovery</h2>
+          <label>Process <select name="process"></select></label>
+          <div class="vec" data-vec></div>
+          <div class="row">
+            <button class="btn primary" type="submit">Release resources</button>
+            <button class="btn danger" type="button" id="btn-term">Terminate process</button>
+          </div>
+        </form>
+      </div>
+      <div class="card">
+        <h2>Latest decision</h2>
+        <div id="dl-out" aria-live="polite"><p class="empty">Submit a request or load a scenario to see the decision here.</p></div>
+        <div class="row"><button class="btn" id="btn-detect">Detect deadlock</button></div>
+        <div id="dl-detect" aria-live="polite"></div>
+      </div>
+      <div class="card" id="dl-txn"></div>
+    </section>
+
+    <section class="view" id="view-inventory" hidden>
+      <h1>Resource Inventory</h1>
+      <p class="intro">Available = Total - Allocated is enforced by the database. Allocated counts change only through requests and releases.</p>
+      <div class="card" id="crud-resources"></div>
+      <div class="card" id="crud-processes"></div>
+    </section>
+
+    <section class="view" id="view-records" hidden>
+      <h1>Aircraft and Flight Records</h1>
+      <div class="card" id="crud-aircraft"></div>
+      <div class="card" id="crud-flights"></div>
+    </section>
+
+    <section class="view" id="view-history" hidden>
+      <h1>Scheduling History</h1>
+      <div class="card">
+        <label>Module <select id="hist-filter">
+          <option value="">All modules</option><option value="RUNWAY">Runway</option>
+          <option value="BAGGAGE">Baggage</option><option value="MAINTENANCE">Maintenance</option>
+        </select></label>
+        <div id="hist-table"></div>
+      </div>
+      <div class="card" id="hist-detail" hidden></div>
+    </section>
+
+    <section class="view" id="view-reports" hidden>
+      <h1>Reports</h1>
+      <div class="card" id="rep-algos"></div>
+      <div class="grid-2">
+        <div class="card" id="rep-decisions"></div>
+        <div class="card" id="rep-checks"></div>
+      </div>
+    </section>
+
+    <section class="view" id="view-settings" hidden>
+      <h1>Settings</h1>
+      <div class="card" id="health"></div>
+      <div class="card" id="crud-runways"></div>
+      <div class="card">
+        <h2>About this project</h2>
+        <p class="note">Priority convention: a smaller number is more urgent (1 is highest). Ties are broken by earlier arrival, then by input order.
+          Time units are simulated minutes. This is an educational simulation of operating-system algorithms.</p>
+      </div>
+    </section>
+  </main>
+  <div id="toasts" role="region" aria-label="Notifications"></div>
+</body>
+</html>
