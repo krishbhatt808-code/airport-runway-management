@@ -1,0 +1,25 @@
+{
+  "name": "airport-runway-management",
+  "version": "1.0.0",
+  "description": "Academic OS project: runway/baggage/maintenance scheduling, Banker's algorithm and deadlock detection with MySQL.",
+  "main": "backend/server.js",
+  "scripts": {
+    "build": "node scripts/build.js",
+    "start": "node backend/server.js",
+    "test": "node --test backend/tests/algorithms.test.js backend/tests/api.test.js",
+    "test:algorithms": "node --test backend/tests/algorithms.test.js",
+    "test:api": "node --test backend/tests/api.test.js",
+    "lines": "node scripts/validate.js",
+    "validate": "node scripts/validate.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "dotenv": "^16.6.1",
+    "express": "^4.19.2",
+    "express-rate-limit": "^7.4.0",
+    "mysql2": "^3.11.0"
+  },
+  "license": "MIT"
+}
